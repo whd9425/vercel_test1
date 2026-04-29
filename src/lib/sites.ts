@@ -7,6 +7,7 @@ export type SiteMeta = {
   device: "pc" | "mo";
   prodHost: string;
   localHost: string;
+  vercelHost: string;
 };
 
 export const SITES: Record<SiteKey, SiteMeta> = {
@@ -17,6 +18,7 @@ export const SITES: Record<SiteKey, SiteMeta> = {
     device: "pc",
     prodHost: "etest.hackers.com",
     localHost: "etest.hackers.local",
+    vercelHost: "etest-vercel-test1.vercel.app",
   },
   emtest: {
     key: "emtest",
@@ -25,6 +27,7 @@ export const SITES: Record<SiteKey, SiteMeta> = {
     device: "mo",
     prodHost: "emtest.hackers.com",
     localHost: "emtest.hackers.local",
+    vercelHost: "emtest-vercel-test1.vercel.app",
   },
   test: {
     key: "test",
@@ -33,6 +36,7 @@ export const SITES: Record<SiteKey, SiteMeta> = {
     device: "pc",
     prodHost: "test.hackers.com",
     localHost: "test.hackers.local",
+    vercelHost: "test-vercel-test1.vercel.app",
   },
   mtest: {
     key: "mtest",
@@ -41,6 +45,7 @@ export const SITES: Record<SiteKey, SiteMeta> = {
     device: "mo",
     prodHost: "mtest.hackers.com",
     localHost: "mtest.hackers.local",
+    vercelHost: "mtest-vercel-test1.vercel.app",
   },
 };
 
@@ -51,6 +56,7 @@ const HOST_TO_SITE: Record<string, SiteKey> = (() => {
   for (const site of Object.values(SITES)) {
     map[site.prodHost] = site.key;
     map[site.localHost] = site.key;
+    map[site.vercelHost] = site.key;
   }
   return map;
 })();
