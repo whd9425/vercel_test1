@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SITE_KEYS, resolveSiteFromHost } from "@/lib/sites";
+import { SITE_KEYS, isSiteKey, resolveSiteFromHost, type SiteKey } from "@/lib/sites";
+
+const SITE_OVERRIDE_COOKIE = "site_override";
 
 export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  const { pathname, search, searchParams } = request.nextUrl;
 
   if (
     pathname === "/unknown-host" ||
@@ -12,8 +14,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const queryOverride = searchParams.get("site");
+  const cookieOverride = request.cookies.get(SITE_OVERRIDE_COOKIE)?.value;
+  const overrideSite: SiteKey | null =
+    queryOverride && isSiteKey(queryOverride)
+      ? queryOverride
+      : cookieOverride && isSiteKey(cookieOverride)
+        ? cookieOverride
+        : null;
+
   const host = request.headers.get("host");
-  const site = resolveSiteFromHost(host);
+  const site = overrideSite ?? resolveSiteFromHost(host);
 
   if (!site) {
     const url = request.nextUrl.clone();
@@ -24,10 +35,22 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone();
   url.pathname = `/${site}${pathname === "/" ? "" : pathname}`;
-  url.search = search;
+  if (queryOverride) {
+    searchParams.delete("site");
+    url.search = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  } else {
+    url.search = search;
+  }
 
   const response = NextResponse.rewrite(url);
   response.headers.set("x-site", site);
+  if (queryOverride && isSiteKey(queryOverride)) {
+    response.cookies.set(SITE_OVERRIDE_COOKIE, queryOverride, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24,
+    });
+  }
   return response;
 }
 
