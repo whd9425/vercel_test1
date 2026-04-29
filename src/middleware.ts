@@ -4,7 +4,7 @@ import { SITE_KEYS, isSiteKey, resolveSiteFromHost, type SiteKey } from "@/lib/s
 
 const SITE_OVERRIDE_COOKIE = "site_override";
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname, search, searchParams } = request.nextUrl;
 
   if (
