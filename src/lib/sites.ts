@@ -62,15 +62,18 @@ const HOST_TO_SITE: Record<string, SiteKey> = (() => {
 })();
 
 export function resolveSiteFromHost(rawHost: string | null | undefined): SiteKey | null {
-  if (!rawHost) return null;
+  const forced = process.env.NEXT_PUBLIC_FORCE_SITE as SiteKey | undefined;
+  if (forced && SITES[forced]) return forced;
+
+  if (!rawHost) {
+    const fallback = process.env.NEXT_PUBLIC_DEFAULT_SITE as SiteKey | undefined;
+    return fallback && SITES[fallback] ? fallback : null;
+  }
   const host = rawHost.toLowerCase().split(":")[0];
   if (HOST_TO_SITE[host]) return HOST_TO_SITE[host];
 
-  const dev = process.env.NODE_ENV !== "production";
-  if (dev) {
-    const fallback = process.env.NEXT_PUBLIC_DEFAULT_SITE as SiteKey | undefined;
-    if (fallback && SITES[fallback]) return fallback;
-  }
+  const fallback = process.env.NEXT_PUBLIC_DEFAULT_SITE as SiteKey | undefined;
+  if (fallback && SITES[fallback]) return fallback;
   return null;
 }
 
